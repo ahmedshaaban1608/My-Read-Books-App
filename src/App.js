@@ -5,49 +5,52 @@ import SearchBooks from "./SearchBooks";
 import { SearchBtn } from "./SearchBtn";
 import * as BooksAPI from "./BooksAPI";
 import Shelf from "./Shelf";
+import MainShelfs from "./MainShelfs";
 
 function App() {
   const [books, setBooks] = useState([]);
   const [searchList, setSearchList] = useState([]);
-  const [searchError, setSearchError] = useState(false);
 
   // add shelf for search books and get the same shelf if the book exists in home page
-  const searchBookShelf = (booksList) => {
-    booksList.forEach((item, index) => {
-      item.shelf = "none";
-      books.forEach((book) => {
-        if (book.id === item.id) {
-          booksList.splice(index, 1, book);
-        }
-      });
-    });
-    setSearchList((prev) => booksList);
+  // const searchBookShelf = (searchList, booksList) => {
+  //   searchList.forEach((item, index) => {
+  //     item.shelf = "none";
+  //     booksList.forEach((book) => {
+  //       if (book.id === item.id) {
+  //         searchList.splice(index, 1, book);
+  //       }
+  //     });
+  //   });
+  //   setSearchList((prev) => booksList);
+  // };
+  const searchResult = (result) => {
+    setSearchList((prev) => result);
   };
+  // const searchBooks = async (query) => {
+  //   console.log(query)
+  //   try {
+  //     if (query) {
+  //       setSearchError((prev) => false);
 
-  const searchBooks = async (query) => {
-    try {
-      if (query.length > 1) {
-        setSearchError((prev) => false);
+  //       const res = await BooksAPI.search(query);
 
-        const res = await BooksAPI.search(query);
-
-        if (res.length) {
-          searchBookShelf(res);
-        }
-        if (res.error) {
-          setSearchList((prev) => []);
-          setSearchError((prev) => true);
-        } else {
-          setSearchError((prev) => false);
-        }
-      } else {
-        setSearchList((prev) => []);
-      }
-    } catch (e) {
-      console.log(e);
-      setSearchList((prev) => []);
-    }
-  };
+  //       if (res.length) {
+  //         searchBookShelf(res);
+  //       }
+  //       if (res.error) {
+  //         setSearchList((prev) => []);
+  //         setSearchError((prev) => true);
+  //       } else {
+  //         setSearchError((prev) => false);
+  //       }
+  //     } else {
+  //       setSearchList((prev) => []);
+  //     }
+  //   } catch (e) {
+  //     console.log(e);
+  //     setSearchList((prev) => []);
+  //   }
+  // };
   // Get books from API
   useEffect(() => {
     try {
@@ -99,7 +102,8 @@ function App() {
                 <h1>MyReads</h1>
               </div>
               <div className="list-books-content">
-                <Shelf books={books} updateShelf={updateShelf} />
+                <MainShelfs books={books} updateShelf={updateShelf} />
+                {/* <Shelf books={books} updateShelf={updateShelf} /> */}
               </div>
             </div>
             <SearchBtn onClickClearSearch={clearSearch} />
@@ -111,10 +115,11 @@ function App() {
         path="/search"
         element={
           <SearchBooks
-            onSearchBooks={searchBooks}
+           
             books={searchList}
             addbook={addbook}
-            error={searchError}
+            searchResult={searchResult}
+            booksList = {books}
           />
         }
       />

@@ -1,14 +1,56 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import SearchList from "./SearchList";
+import * as BooksAPI from "./BooksAPI"
 
-const SearchBooks = ({ onSearchBooks, books, addbook, error }) => {
+const SearchBooks = ({ books, addbook, searchResult, booksList}) => {
   const [query, setQuery] = useState("");
+  const [searchError, setSearchError] = useState(false);
 
-  const querySearch = (e) => {
-    setQuery((prev) => e.target.value);
-    onSearchBooks(query);
-  };
+  useEffect(()=>{
+const timeOut = setTimeout(async() => {
+  try {
+    setSearchError((prev) => false);
+    if (query) {
+            const res = await BooksAPI.search(query);
+
+      if (res.length) {
+        res.forEach((item, index) => {
+          item.shelf = "none";
+          booksList.forEach((book) => {
+            if (book.id === item.id) {
+              res.splice(index, 1, book);
+            }
+          });
+        });
+        searchResult(res)
+      }
+      if (res.error) {
+        searchResult([])
+        setSearchError((prev) => true);
+      } else {
+        setSearchError((prev) => false);
+      }
+    } else {
+      searchResult([])
+    }
+  } catch (e) {
+    console.log(e);
+    searchResult([])
+  }
+},1000 
+);
+return () => {
+  clearTimeout(timeOut);
+};
+  },[query])
+
+  // const querySearch = (e) => {
+  //   const newQuery = setQuery((prev) => e.target.value);
+  //   console.log(newQuery)
+   
+  // };
+  
   return (
     <div className="search-books">
       <div className="search-books-bar">
@@ -18,7 +60,7 @@ const SearchBooks = ({ onSearchBooks, books, addbook, error }) => {
         <div className="search-books-input-wrapper">
           <input
             value={query}
-            onChange={querySearch}
+            onChange={(e)=>setQuery((prev) => e.target.value)}
             type="text"
             placeholder="Search by title, author, or ISBN"
           />
@@ -39,7 +81,7 @@ const SearchBooks = ({ onSearchBooks, books, addbook, error }) => {
               <SearchList books={books} updateShelf={addbook} />
               </>
             );
-          } else if (error) {
+          } else if (searchError) {
             return (
               <div className="center">
                 <p>No books related to your search</p>
